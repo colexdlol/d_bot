@@ -8,10 +8,10 @@ from huggingface_hub import InferenceClient
 import threading
 import datetime
 import time
-
 import os
+import functools
 
-TOKEN_KEY = os.getenv("DISCORD_TOKEN")
+TOKEN_KEY = os.getenv("TOKEN_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
@@ -28,8 +28,6 @@ intents.members = True
 ai_client = Groq(api_key=GROQ_API_KEY, )
 user_chat_history = {}
 
-import functools
-
 def generate_image_sync(prompt):
     gen_client = InferenceClient("black-forest-labs/FLUX.1-schnell", token=HF_TOKEN)
     response = gen_client.text_to_image(prompt)
@@ -40,9 +38,6 @@ async def ai_shit_async(message):
     loop = asyncio.get_running_loop()
     file_path = await loop.run_in_executor(None, functools.partial(generate_image_sync, message.content))
     await message.reply(file=discord.File(file_path))
-
-import functools
-import asyncio
 
 def ai_shit2_blocking(messages_history, user_input):
     response = ai_client.chat.completions.create(

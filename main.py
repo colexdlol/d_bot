@@ -79,34 +79,19 @@ async def ai_shit_async2(message):
         )
     }
 
-    #if user_id not in user_chat_history:
-        #user_chat_history[user_id] = [system_prompt]
-    #else:
-        #if user_chat_history[user_id][0]["role"] != "system":
-            #user_chat_history[user_id].insert(0, system_prompt)
-
-            # get replied to user info if they replied to someone
-        
     reply_context = ""
     if message.reference and message.reference.resolved:
         replied_to = message.reference.resolved
         reply_context = f" [replying to {replied_to.author.display_name} (mention: {replied_to.author.mention})]"
 
-    ####shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-
-    ####user_chat_history[user_id].append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-
     if user_id not in user_chat_history:
         user_chat_history[user_id] = [system_prompt]
     else:
-        user_chat_history[user_id][0] = system_prompt  # always update system prompt with latest shared log
+        user_chat_history[user_id][0] = system_prompt
 
     user_chat_history[user_id].append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-    #user_chat_history[user_id].append({"role": "user", "content": f"{user_name}: {message.content}"})
 
-    # add this:
     shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-    #shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}): {message.content}"})
     if len(shared_chat_log) > 100:
         shared_chat_log = shared_chat_log[-100:]
 
@@ -118,6 +103,10 @@ async def ai_shit_async2(message):
     user_chat_history[user_id].append({"role": "assistant", "content": assistant_response})
     if len(user_chat_history[user_id]) > 100:
         user_chat_history[user_id] = user_chat_history[user_id][-100:]
+
+    shared_chat_log.append({"role": "assistant", "content": f"Sluttie [replying to {message.author.display_name} (mention: {message.author.mention})]: {assistant_response}"})
+    if len(shared_chat_log) > 100:
+        shared_chat_log = shared_chat_log[-100:]
 
     print(f"Sluttie to {user_name}: {assistant_response}")
     await message.reply(f"{assistant_response}")

@@ -53,7 +53,7 @@ def ai_shit2_blocking(messages_history, user_input):
 
 async def ai_shit_async2(message):
     global shared_chat_log
-    
+
     user_id = message.author.id
     user_name = message.author.name
     user_mention = message.author.mention
@@ -91,7 +91,7 @@ async def ai_shit_async2(message):
     user_chat_history[user_id].append({"role": "user", "content": f"{user_name}: {message.content}"})
 
     # add this:
-    shared_chat_log.append({"role": "user", "content": f"{user_name}: {message.content}"})
+    shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (username: {user_name}, id: {user_id}): {message.content}"})
     if len(shared_chat_log) > 100:
         shared_chat_log = shared_chat_log[-100:]
 

@@ -52,6 +52,8 @@ def ai_shit2_blocking(messages_history, user_input):
     return response.choices[0].message.content
 
 async def ai_shit_async2(message):
+    global shared_chat_log
+    
     user_id = message.author.id
     user_name = message.author.name
     user_mention = message.author.mention

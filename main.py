@@ -10,6 +10,7 @@ import datetime
 import time
 import os
 import functools
+from discord.ext import tasks
 
 TOKEN_KEY = os.getenv("TOKEN_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -163,6 +164,8 @@ def parse_duration(duration):
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user}')
+    if not auto_purge_gen.is_running():
+        auto_purge_gen.start()
 
 @client.event
 async def on_message(message):
@@ -1502,5 +1505,36 @@ async def on_member_join(member):
         channel = client.get_channel(int(channel_id))
         if channel and welcome_message != None:
             await channel.send(f"{member.mention}, "  + welcome_message)
+
+@tasks.loop(seconds=24)
+async def auto_purge_gen():
+    for guild in client.guilds:
+        gen_channel = discord.utils.get(guild.text_channels, name="gen")
+        if gen_channel:
+            try:
+                position = gen_channel.position
+                category = gen_channel.category
+                overwrites = gen_channel.overwrites
+                topic = gen_channel.topic
+
+                await gen_channel.delete()
+
+                new_channel = await guild.create_text_channel(
+                    name="gen",
+                    category=category,
+                    overwrites=overwrites,
+                    topic=topic,
+                    position=position
+                )
+
+                await new_channel.send("channel refreshed")
+                await asyncio.sleep(1)
+                await new_channel.send("first lol")
+            except Exception as e:
+                print(f"auto-purge failed: {e}")
+
+@auto_purge_gen.before_loop
+async def before_purge():
+    await client.wait_until_ready()
 
 client.run(TOKEN)

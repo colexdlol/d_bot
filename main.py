@@ -1506,7 +1506,7 @@ async def on_member_join(member):
         if channel and welcome_message != None:
             await channel.send(f"{member.mention}, "  + welcome_message)
 
-@tasks.loop(seconds=24)
+@tasks.loop(hours=24)
 async def auto_purge_gen():
     for guild in client.guilds:
         gen_channel = discord.utils.get(guild.text_channels, name="gen")

@@ -58,6 +58,11 @@ async def ai_shit_async2(message):
     user_name = message.author.name
     user_mention = message.author.mention
 
+    reply_context = ""
+    if message.reference and message.reference.resolved:
+        replied_to = message.reference.resolved
+        reply_context = f" [replying to {replied_to.author.display_name} (mention: {replied_to.author.mention})]"
+
     system_prompt = {
         "role": "system",
         "content": (
@@ -79,40 +84,26 @@ async def ai_shit_async2(message):
         )
     }
 
-    reply_context = ""
-    if message.reference and message.reference.resolved:
-        replied_to = message.reference.resolved
-        reply_context = f" [replying to {replied_to.author.display_name} (mention: {replied_to.author.mention})]"
+    shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (mention: {user_mention}){reply_context}: {message.content}"})
+    if len(shared_chat_log) > 50:
+        shared_chat_log = shared_chat_log[-50:]
 
-    if user_id not in user_chat_history:
-        user_chat_history[user_id] = [system_prompt]
-    else:
-        user_chat_history[user_id][0] = system_prompt
-
-    user_chat_history[user_id].append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-
-    shared_chat_log.append({"role": "user", "content": f"{message.author.display_name} (mention: {message.author.mention}, username: {user_name}){reply_context}: {message.content}"})
-    if len(shared_chat_log) > 100:
-        shared_chat_log = shared_chat_log[-100:]
+    messages_to_send = [system_prompt] + shared_chat_log
 
     loop = asyncio.get_running_loop()
     assistant_response = await loop.run_in_executor(
-        None, functools.partial(ai_shit2_blocking, user_chat_history[user_id], message.content)
+        None, functools.partial(ai_shit2_blocking, messages_to_send, message.content)
     )
 
-    user_chat_history[user_id].append({"role": "assistant", "content": assistant_response})
-    if len(user_chat_history[user_id]) > 100:
-        user_chat_history[user_id] = user_chat_history[user_id][-100:]
-
-    shared_chat_log.append({"role": "assistant", "content": f"Sluttie [replying to {message.author.display_name} (mention: {message.author.mention})]: {assistant_response}"})
-    if len(shared_chat_log) > 100:
-        shared_chat_log = shared_chat_log[-100:]
+    shared_chat_log.append({"role": "assistant", "content": assistant_response})
+    if len(shared_chat_log) > 50:
+        shared_chat_log = shared_chat_log[-50:]
 
     print(f"Sluttie to {user_name}: {assistant_response}")
     await message.reply(f"{assistant_response}")
 
-    with open("chat_history.json", "w") as f:
-        json.dump(user_chat_history, f)
+    #with open("chat_history.json", "w") as f:
+        #json.dump(user_chat_history, f)
 
 ## NORMAL STUFF
 
@@ -1014,6 +1005,57 @@ async def on_message(message):
         num = random.randint(0, 100)
         await message.channel.send(f"{member.mention} is " + '```' + f"{num}%``` gay")
 
+    if message.content.startswith(prefix + 'slap'):
+        member = message.mentions[0] if message.mentions else None
+        if not member:
+            try:
+                uid = int(message.content.split()[2])
+                member = message.guild.get_member(uid)
+            except:
+                return
+            
+        if not member:
+            member = message.author
+            
+        pool = [
+                "https://klipy.com/gifs/girl-slap",
+                "https://klipy.com/gifs/chainsaw-man-csm-104",
+                'https://klipy.com/gifs/no-angry-26',
+                'https://klipy.com/gifs/no-21792',
+                'https://klipy.com/gifs/anime-slap-mad-1',
+                'https://klipy.com/gifs/slap-13638',
+                'https://klipy.com/gifs/bofetada',
+                'https://klipy.com/gifs/anime-kaguya-sama-5',
+                'https://klipy.com/gifs/slap-chie',
+                'https://klipy.com/gifs/discord-anime-8',
+                
+            ]
+        await message.channel.send(message.author.mention + ' has slapped ' + member.mention + '\n' + random.choice(pool))
+
+    if message.content.startswith(prefix + 'punch'):
+        member = message.mentions[0] if message.mentions else None
+        if not member:
+            try:
+                uid = int(message.content.split()[2])
+                member = message.guild.get_member(uid)
+            except:
+                return
+            
+        if not member:
+            member = message.author
+            
+        pool = [
+                "https://klipy.com/gifs/hxh-hunter-x-hunter-36",
+                "https://klipy.com/gifs/weliton-amogos-1",
+                'https://klipy.com/gifs/naru-punch',
+                'https://klipy.com/gifs/spy-family-spy-x-family-4',
+                'https://klipy.com/gifs/anime-angry-119',
+                'https://klipy.com/gifs/kofune-ushio',
+                'https://klipy.com/gifs/hanagaki-takemichi-takemichi-1',
+                'https://klipy.com/gifs/revenge-punch',
+            ]
+        await message.channel.send(message.author.mention + ' has punched ' + member.mention + '\n' + random.choice(pool))
+
     if message.content.startswith(prefix + 'hug'):
         member = message.mentions[0] if message.mentions else None
         if not member:
@@ -1049,10 +1091,19 @@ async def on_message(message):
         pool = [
                 "https://tenor.com/view/kiss-gif-26337089",
                 "https://tenor.com/view/ichigo-hiro-anime-kiss-anime-gif-8146116001988818857",
-                "https://tenor.com/view/hyakkano-100-girlfriends-anime-kiss-kiss-anime-anime-kiss-cheek-gif-404363882587350736"
+                "https://tenor.com/view/hyakkano-100-girlfriends-anime-kiss-kiss-anime-anime-kiss-cheek-gif-404363882587350736",
+                'https://klipy.com/gifs/kiss-gentle-kiss',
+                'https://klipy.com/gifs/kiss-35258',
+                'https://klipy.com/gifs/anime-kiss-33',
+                'https://klipy.com/gifs/kiss-35420',
+                'https://klipy.com/gifs/hyakkano-100-girlfriends-29',
+                'https://klipy.com/gifs/anime-kiss-34',
+                'https://klipy.com/gifs/megumi-kato-kiss',
+                'https://klipy.com/gifs/kiss-anime-kissing-anime',
+                'https://klipy.com/gifs/anime-kiss-kiss-gif-1'
             ]
         await message.channel.send(message.author.mention + ' has kissed ' + member.mention + '\n' + random.choice(pool))
-
+        
     if message.content.startswith(prefix + 'fuck'):
         member = message.mentions[0] if message.mentions else None
         if not member:
